@@ -1,0 +1,28 @@
+PODS:
+  - apple_vision_document_scanner (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - apple_vision_document_scanner (from `.symlinks/plugins/apple_vision_document_scanner/ios`)
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+EXTERNAL SOURCES:
+  apple_vision_document_scanner:
+    :path: ".symlinks/plugins/apple_vision_document_scanner/ios"
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+
+SPEC CHECKSUMS:
+  apple_vision_document_scanner: 8fab98e3d9a11215f58a07c5c31df3d2aad3b07d
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+
+PODFILE CHECKSUM: 251cb053df7158f337c0712f2ab29f4e0fa474ce
+
+COCOAPODS: 1.16.2
