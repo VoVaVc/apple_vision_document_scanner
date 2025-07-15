@@ -2,27 +2,20 @@ import Flutter
 import UIKit
 import VisionKit
 
-enum AppleVisionDocumentScannerMethods: String {
-    case scan, destroy
-}
-
 enum ScannerError: Error {
     case noRootViewController
-    case unsupported
-    case scanFailed(String)
 }
 
 public class AppleVisionDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
-  var scanner: VNDocumentCameraViewController
-  var result: FlutterResult?
+  var scanner: VNDocumentCameraViewController?
 
   override init() {
     super.init()
     #if targetEnvironment(simulator)
-        fatalError("Plugin cannot run in the simulator.")
+        self.scanner = nil
     #else
         self.scanner = VNDocumentCameraViewController()
-        self.scanner.delegate = self
+        self.scanner!.delegate = self
     #endif
   }
     
@@ -33,12 +26,13 @@ public class AppleVisionDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocume
   }
     
   private func destroy() {
-    scanner.dismiss(animated: false)
+    scanner?.dismiss(animated: false)
+    return;
   }
 
   private func getRootController() throws -> UIViewController {
     guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
-        throw ScannerError.noRootViewController;
+      throw ScannerError.noRootViewController
     }
     return rootViewController
   }
@@ -48,14 +42,22 @@ public class AppleVisionDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocume
     return paths[0]
   }
 
-  private func scan() throws {
+  private func scan(result: @escaping FlutterResult) {
+    guard let scanner = self.scanner else {
+      result(FlutterError(code: "SIMULATOR_NOT_SUPPORTED", message: "Document scanning is not supported in the simulator.", details: nil))
+      return
+    }
     guard VNDocumentCameraViewController.isSupported else {
-      throw ScannerError.unsupported;
+      result(FlutterError(code: "UNSUPPORTED", message: "Document scanning is not supported.", details: nil))
+      return
     }
     guard let rootController = try? getRootController() else {
-      throw ScannerError.noRootViewController;
+      result(FlutterError(code: "NO_ROOT_VIEW_CONTROLLER", message: "Root view controller not found", details: nil))
+      return
     }
-    rootController.present(self.scanner, animated: true)
+    
+    rootController.present(scanner, animated: true)
+    result("Started scanning")
   }
 
   public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
@@ -73,33 +75,29 @@ public class AppleVisionDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocume
         filenames.append(url.path)
     }
 
-    result?(filenames)
+    // result?(filenames)
   }
 
-  public func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
-       result?(nil)
-       scanner.dismiss(animated: true)
-   }
+  // public func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+  //   scanner!.dismiss(animated: true)
+  //   result?(nil)
+  // }
 
-   public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
-       result?(FlutterError(code: "SCAN_ERROR", message: "Failed to scan documents", details: error.localizedDescription))
-       scanner.dismiss(animated: true)
-   }
+  // public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+  //   scanner!.dismiss(animated: true)
+  //   result?(FlutterError(code: "SCAN_FAILED", message: "Failed to scan documents", details: error.localizedDescription))
+  // }
    
 
-  public func handle(_ call: FlutterMethodCall, resultArg: @escaping FlutterResult) {
-    result = resultArg
+  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case AppleVisionDocumentScannerMethods.scan.rawValue:
-      do {
-            try scan()
-        } catch {
-            resultArg(FlutterError(code: "SCAN_ERROR", message: "Failed to start scan", details: error.localizedDescription))
-        }
-    case AppleVisionDocumentScannerMethods.destroy.rawValue:
-      destroy()
+    case "scan":
+        scan(result: result)
+    case "destroy":
+        destroy()
+        result(nil)
     default:
-      resultArg(FlutterMethodNotImplemented)
+        result(FlutterMethodNotImplemented)
     }
-  }
+}
 }
