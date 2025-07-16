@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:apple_vision_document_scanner/apple_vision_document_scanner.dart';
 
@@ -15,28 +16,33 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final appleVisionDocumentScannerPlugin = AppleVisionDocumentScanner();
+  List<File> scannedFiles = [];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('IOS Document Scanner Example'),
         ),
-        body: Center(
-          child: CupertinoButton(
-            child: Text('Scan Documents'),
-            onPressed: () async {
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+              print('Starting document scan...');
               try {
                 final scannedFiles = await appleVisionDocumentScannerPlugin.scan();
-                // Handle the scanned files (e.g., display them, save them, etc.)
-                print('Scanned files: $scannedFiles');
+                setState(() {
+                  this.scannedFiles = scannedFiles;
+                });
               } catch (e) {
                 print('Error scanning documents: $e');
               }
             },
+          child: const Icon(Icons.document_scanner),
         ),
-      ),
-    ));
+        body: CarouselView(
+    scrollDirection: Axis.vertical,
+    itemExtent: double.infinity,
+    children: [...scannedFiles.map((file) => Image.file(file))],
+    )));
   }
 }
