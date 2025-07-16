@@ -1,3 +1,3 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* TODO: A Flutter plugin to scan documents with apple VisionKit
