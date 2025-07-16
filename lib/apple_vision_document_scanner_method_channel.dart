@@ -18,7 +18,8 @@ class MethodChannelAppleVisionDocumentScanner extends AppleVisionDocumentScanner
 
   @override
   Future<List<File>> scan() async {
-    final imagePaths = await methodChannel.invokeMethod<List<String>>(AppleVisionDocumentScannerMethods.scan.name) ?? [];
+    final result = await methodChannel.invokeMethod<List<Object?>>(AppleVisionDocumentScannerMethods.scan.name) ?? [];
+    final imagePaths = result.map((e) => e.toString()).toList();
     final imageFiles = imagePaths.map((path) => File(path)).toList();
     return imageFiles;
   }
